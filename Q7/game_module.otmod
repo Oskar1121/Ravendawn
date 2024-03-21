@@ -1,0 +1,10 @@
+Module
+  name: game_module
+  description: Example module
+  author: Oskar
+  website: None
+  sandboxed: true
+  autoload: true
+  scripts: [ game_module ]
+  @onLoad: onLoad()
+  @onUnload: onUnload()

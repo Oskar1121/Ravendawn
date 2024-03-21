@@ -1,0 +1,11 @@
+MiniPanel
+  anchors.centerIn: parent
+  phantom: false
+  size: 300 340
+
+  Button
+    id: button
+    anchors.top: parent.top
+    anchors.left: parent.left
+    !text: 'Jump!'
+    @onClick: modules.game_module.m_ModuleFunctions.jump()
