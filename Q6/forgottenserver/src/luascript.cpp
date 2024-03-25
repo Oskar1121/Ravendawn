@@ -7739,6 +7739,20 @@ int LuaScriptInterface::luaCreatureCreate(lua_State* L)
 	return 1;
 }
 
+int LuaScriptInterface::luaDoCreatureDash(lua_State* L)
+{
+	// creature:doCreatureDash(enabled)
+	// Lua function to activate/deactivate blur behind the creature
+	const std::string& name = getString(L, 2);
+	Creature* creature = getUserdata<Creature>(L, 1);
+	if (creature) {
+		pushBoolean(L, creature->manageDash(getBoolean(L, 2)));
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
+}
+
 int LuaScriptInterface::luaCreatureGetEvents(lua_State* L)
 {
 	// creature:getEvents(type)
