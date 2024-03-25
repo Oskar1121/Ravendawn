@@ -42,10 +42,41 @@ double Creature::speedA = 0;
 double Creature::speedB = 0;
 double Creature::speedC = 0;
 
+std::map<Otc::Direction, std::vector<DashData>> Creature::m_outfitOffsets;
+
 Creature::Creature() :m_type(Proto::CreatureTypeUnknown)
 {
     m_name.setFont(g_gameConfig.getCreatureNameFont());
     m_name.setAlign(Fw::AlignTopCenter);
+
+    if (m_outfitOffsets.empty()) {
+        // Calculate the offset and opacity for all four directions, do it once as all of them are the same for all creatures
+        static int m_dashStep = 16;
+        static float m_opacityStep = 0.15;
+        for (int i = Otc::North; i <= Otc::West; ++i) {
+            Otc::Direction direction = static_cast<Otc::Direction>(i);
+            for (int j = 1; j <= 4; ++j) {
+                switch (i) {
+                    case Otc::North: {
+                        m_outfitOffsets[direction].push_back(DashData({ 0, j * m_dashStep }, 1.0 - (j * m_opacityStep)));
+                        break;
+                    }
+                    case Otc::East: {
+                        m_outfitOffsets[direction].push_back(DashData({ -(j * m_dashStep), 0 }, 1.0 - (j * m_opacityStep)));
+                        break;
+                    }
+                    case Otc::South: {
+                        m_outfitOffsets[direction].push_back(DashData({ 0, -(j * m_dashStep) }, 1.0 - (j * m_opacityStep)));
+                        break;
+                    }
+                    case Otc::West: {
+                        m_outfitOffsets[direction].push_back(DashData({ j * m_dashStep, 0 }, 1.0 - (j * m_opacityStep)));
+                        break;
+                    }
+                }
+            }
+        }
+    }
 
     // Example of how to send a UniformValue to shader
     /*
@@ -60,6 +91,40 @@ Creature::Creature() :m_type(Proto::CreatureTypeUnknown)
         m_mountShader->setUniformValue(ShaderManager::MOUNT_ID_UNIFORM, m_outfit.getMount());
     };
     */
+}
+
+void Creature::drawDashEffect(Point& dest)
+{
+    if (!m_dash) {
+        // Don't render the blur if the creature is not dashing
+        return;
+    }
+
+    const auto& datType = getThingType();
+    const Point jumpOffset = Point(m_jumpOffset.x, m_jumpOffset.y);
+    const auto& offsets = m_outfitOffsets[m_direction];
+    switch (m_direction) {
+        case Otc::South:
+        case Otc::East:
+        {
+            // For south and east, draw the blur in the reversed order to not overlap the outfits
+            for (auto offset = offsets.rbegin(); offset != offsets.rend(); ++offset) {
+                g_drawPool.setOpacity(offset->opacity, true);
+                datType->draw(dest - jumpOffset + m_walkOffset + offset->offset, 0, m_direction, 0, 0, m_walkAnimationPhase, Color::white);
+            }
+            break;
+        }
+        case Otc::North:
+        case Otc::West:
+        {
+            // For north and west, draw in normal order
+            for (auto& offset : offsets) {
+                g_drawPool.setOpacity(offset.opacity, true);
+                datType->draw(dest - jumpOffset + m_walkOffset + offset.offset, 0, m_direction, 0, 0, m_walkAnimationPhase, Color::white);
+            }
+            break;
+        }
+    }
 }
 
 void Creature::draw(const Point& dest, bool drawThings, LightView* lightView)

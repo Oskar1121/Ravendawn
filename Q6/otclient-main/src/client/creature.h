@@ -36,6 +36,14 @@ public:
     Outfit outfit;
 };
 
+struct DashData
+{
+    DashData(Point _offset, float _opacity) : offset(_offset), opacity(_opacity) {}
+
+    Point offset;
+    float opacity;
+};
+
 // @bindclass
 class Creature : public Thing
 {
@@ -78,6 +86,9 @@ public:
     void setIconTexture(const std::string& filename);
     void setPassable(bool passable) { m_passable = passable; }
     void setMountShader(const std::string_view name);
+    void drawDashEffect(Point& dest);
+    void setDash(bool enabled) { m_dash = enabled; }
+    bool isDash() const { return m_dash; }
 
     void onStartAttachEffect(const AttachedEffectPtr& effect) override;
     void onDispatcherAttachEffect(const AttachedEffectPtr& effect) override;
@@ -236,6 +247,7 @@ private:
     bool m_allowAppearWalk{ false };
     bool m_showTimedSquare{ false };
     bool m_showStaticSquare{ false };
+    bool m_dash{ false };
 
     bool m_removed{ true };
     bool m_drawOutfitColor{ true };
@@ -286,6 +298,8 @@ private:
     std::function<void()> m_mountShaderAction{ nullptr };
 
     ThingType* m_mountType{ nullptr };
+
+    static std::map<Otc::Direction, std::vector<DashData>> m_outfitOffsets;
 
 #ifndef BOT_PROTECTION
     StaticTextPtr m_text;
