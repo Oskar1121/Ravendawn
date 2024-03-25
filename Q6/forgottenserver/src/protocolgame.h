@@ -156,6 +156,7 @@ private:
 	void parseCloseChannel(NetworkMessage& msg);
 
 	// Send functions
+	void sendDash(const Creature* creature, bool enabled);
 	void sendChannelMessage(const std::string& author, const std::string& text, SpeakClasses type, uint16_t channel);
 	void sendChannelEvent(uint16_t channelId, const std::string& playerName, ChannelEvent_t channelEvent);
 	void sendClosePrivate(uint16_t channelId);

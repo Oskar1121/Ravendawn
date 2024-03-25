@@ -1057,6 +1057,12 @@ public:
 			client->sendCombatAnalyzer(type, amount, impactType, target);
 		}
 	}
+	void sendDash(const Creature* creature, bool enabled)
+	{
+		if (client) {
+			client->sendDash(creature, enabled);
+		}
+	}
 
 	void receivePing() { lastPong = OTSYS_TIME(); }
 

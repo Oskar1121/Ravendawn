@@ -348,6 +348,8 @@ public:
 	virtual std::optional<int32_t> getStorageValue(uint32_t key) const;
 	decltype(auto) getStorageMap() const { return storageMap; }
 
+	bool manageDash(bool enabled);
+
 protected:
 	virtual bool useCacheMap() const { return false; }
 

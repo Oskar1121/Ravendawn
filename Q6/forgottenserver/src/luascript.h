@@ -435,6 +435,7 @@ private:
 	static int luaIsMoveable(lua_State* L);
 	static int luaIsValidUID(lua_State* L);
 
+	static int luaDoCreatureDash(lua_State* L);
 	//
 	static int luaCreateCombatArea(lua_State* L);
 
