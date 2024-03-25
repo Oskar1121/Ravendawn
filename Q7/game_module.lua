@@ -1,19 +1,19 @@
 m_ModuleFunctions = {}
 m_ModuleCache = {}
 
-m_ModuleFunctions.step = 12
+m_ModuleFunctions.step = 6
 
 function onLoad()
     connect(g_game, {
         onGameStart = m_ModuleFunctions.onGameStart,
-        onGameStart = m_ModuleFunctions.onGameEnd
+        onGameEnd = m_ModuleFunctions.onGameEnd
     })
 end
 
 function onUnload()
     disconnect(g_game, {
         onGameStart = m_ModuleFunctions.onGameStart,
-        onGameStart = m_ModuleFunctions.onGameEnd
+        onGameEnd = m_ModuleFunctions.onGameEnd
     })
 end
 
