@@ -260,6 +260,7 @@ private:
     void parseExtendedOpcode(const InputMessagePtr& msg);
     void parseChangeMapAwareRange(const InputMessagePtr& msg);
     void parseCreaturesMark(const InputMessagePtr& msg);
+    void parseCreatureDash(const InputMessagePtr& msg);
     // 12x
     void parseShowDescription(const InputMessagePtr& msg);
     void parseBestiaryTracker(const InputMessagePtr& msg);

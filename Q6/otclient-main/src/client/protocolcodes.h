@@ -77,6 +77,7 @@ namespace Proto
         GameServerCreatureShader = 54,
         GameServerMapShader = 55,
         GameServerFloorDescription = 75,
+        GameServerDash = 76,
 
         // original tibia ONLY
         GameServerImbuementDurations = 93,

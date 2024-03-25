@@ -39,14 +39,22 @@
 
 Tile::Tile(const Position& position) : m_position(position) {}
 
-void Tile::drawThing(const ThingPtr& thing, const Point& dest, int flags, LightView* lightView)
+void Tile::drawThing(const ThingPtr& thing, const Point& dest, std::vector<std::pair<CreaturePtr, Point>>* creatures, int flags, LightView* lightView)
 {
-    thing->draw(dest - m_drawElevation * g_drawPool.getScaleFactor(), flags & Otc::DrawThings, lightView);
+    Point thingDest = dest - m_drawElevation * g_drawPool.getScaleFactor();
+    thing->draw(thingDest, flags & Otc::DrawThings, lightView);
+    if (creatures && thing->isCreature()) {
+        CreaturePtr creature = thing->static_self_cast<Creature>();
+        if (creature->isDash()) {
+            // If the thing is a creature and it is dashing add the creature to the vector with its destination
+            creatures->push_back(std::make_pair(creature, thingDest));
+        }
+    }
     if (thing->hasElevation())
         m_drawElevation = std::min<uint8_t>(m_drawElevation + thing->getElevation(), g_gameConfig.getTileMaxElevation());
 }
 
-void Tile::draw(const Point& dest, const MapPosInfo& mapRect, int flags, LightView* lightView)
+void Tile::draw(const Point& dest, const MapPosInfo& mapRect, std::vector<std::pair<CreaturePtr, Point>>* creatures, int flags, LightView* lightView)
 {
     m_drawElevation = 0;
     m_lastDrawDest = dest;
@@ -62,30 +70,30 @@ void Tile::draw(const Point& dest, const MapPosInfo& mapRect, int flags, LightVi
         if (!thing->isGround() && !thing->isGroundBorder() && !thing->isOnBottom())
             break;
 
-        drawThing(thing, dest, flags, lightView);
+        drawThing(thing, dest, nullptr, flags, lightView);
     }
 
     if (hasCommonItem()) {
         for (auto it = m_things.rbegin(); it != m_things.rend(); ++it) {
             const auto& item = *it;
             if (!item->isCommon()) continue;
-            drawThing(item, dest, flags, lightView);
+            drawThing(item, dest, nullptr, flags, lightView);
         }
     }
 
     // after we render 2x2 lying corpses, we must redraw previous creatures/ontop above them
     for (const auto& tile : m_tilesRedraw) {
-        tile->drawCreature(tile->m_lastDrawDest, mapRect, flags, true, lightView);
+        tile->drawCreature(tile->m_lastDrawDest, mapRect, nullptr, flags, true, lightView);
         tile->drawTop(tile->m_lastDrawDest, flags, true, lightView);
     }
 
-    drawCreature(dest, mapRect, flags, false, lightView);
+    drawCreature(dest, mapRect, creatures, flags, false, lightView);
     drawTop(dest, flags, false, lightView);
     drawAttachedEffect(dest, lightView, false);
     drawAttachedParticlesEffect(dest);
 }
 
-void Tile::drawCreature(const Point& dest, const MapPosInfo& mapRect, int flags, bool forceDraw, LightView* lightView)
+void Tile::drawCreature(const Point& dest, const MapPosInfo& mapRect, std::vector<std::pair<CreaturePtr, Point>>* creatures, int flags, bool forceDraw, LightView* lightView)
 {
     if (!forceDraw && !m_drawTopAndCreature)
         return;
@@ -94,7 +102,7 @@ void Tile::drawCreature(const Point& dest, const MapPosInfo& mapRect, int flags,
         for (const auto& thing : m_things) {
             if (!thing->isCreature() || thing->static_self_cast<Creature>()->isWalking()) continue;
 
-            drawThing(thing, dest, flags, lightView);
+            drawThing(thing, dest, creatures, flags, lightView);
         }
     }
 
@@ -105,6 +113,9 @@ void Tile::drawCreature(const Point& dest, const MapPosInfo& mapRect, int flags,
         );
 
         creature->draw(cDest, flags & Otc::DrawThings, lightView);
+        if (creatures && creature->isDash()) {
+            creatures->push_back(std::make_pair(creature, cDest));
+        }
     }
 }
 
@@ -114,7 +125,7 @@ void Tile::drawTop(const Point& dest, int flags, bool forceDraw, LightView* ligh
         return;
 
     for (const auto& effect : m_effects)
-        drawThing(effect, dest, flags & Otc::DrawThings, lightView);
+        drawThing(effect, dest, nullptr, flags & Otc::DrawThings, lightView);
 
     if (hasTopItem()) {
         for (const auto& item : m_things) {
